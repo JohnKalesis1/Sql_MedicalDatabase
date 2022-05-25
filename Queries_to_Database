@@ -1,0 +1,112 @@
+#Query 1 ->2 results
+select SSN, sum(treatment.Cost) from treatment, patient, undergoes
+where treatment.Code=undergoes.Treatment and patient.SSN=undergoes.Patient 
+	and patient.Age<=40 and patient.Age>=30 
+	and patient.Gender='male' 
+group by patient.SSN
+having Count(*)>=2;
+
+
+
+
+
+#Query 2 ->3 results
+select * from nurse, block ,on_call 
+where nurse.EmployeeID=on_call.Nurse and on_call.BlockCode=block.BlockCode and on_call.BlockFloor=block.BlockFloor
+	and OnCallStart>='2008-04-20 23:22:00' and OnCallStart<='2009-06-04 11:00:00'
+	and on_call.BlockFloor>=4 and on_call.BlockFloor<=7 
+group by EmployeeID
+having Count(distinct(on_call.BlockCode))>=2;
+
+
+
+
+
+
+#Query 3 ->192 results
+select distinct(SSN), patient.Gender, num_of_doses from patient, vaccination, vaccines
+where patient.SSN=vaccination.patient_SSN and patient.Gender='female' and patient.Age>40
+	and vaccination.vaccines_vax_name=vaccines.vax_name 
+	and vaccines.num_of_doses=(
+		select Count(*) from vaccination
+        where patient.SSN=vaccination.patient_SSN
+	)
+;
+
+
+
+#Query 4 ->15 results
+select medication.Brand, medication.Name, Count(*) from prescribes, medication, patient
+where prescribes.Medication=medication.Code and patient.SSN=prescribes.Patient
+group by medication.code
+having Count(*)>=2
+;
+
+
+
+
+#Query 5->14 results
+select patient.SSN, physician.Name from patient, vaccination, vaccines , physician
+where patient.SSN=vaccination.patient_SSN and vaccination.vaccines_vax_name=vaccines.vax_name
+	and physician.EmployeeID=vaccination.physician_EmployeeID
+group by patient.SSN 
+having Count(distinct(physician.EmployeeID))=1
+;
+
+
+
+#Query 6->1 result
+select 'yes' where exists (
+	select * from room, stay
+    where room.RoomNumber=stay.Room and stay.StayStart>='2014-01-01 00:00:00' and StayEnd<'2013-01-01 00:00:00'
+)
+union
+select 'no' where not exists (
+	select * from room, stay
+    where room.RoomNumber=stay.Room and stay.StayStart>='2013-01-01 00:00:00' and StayEnd<'2014-01-01 00:00:00'
+)
+;
+
+
+
+#Query 7->14 results
+select physician.Name, count(patient.SSN) from physician, patient, undergoes, trained_in, treatment
+where physician.EmployeeID=trained_in.Physician and physician.EmployeeID=undergoes.physician 
+	and treatment.Name='PATHOLOGY' and treatment.Code=trained_in.Speciality
+    and patient.SSN=undergoes.Patient 
+group by physician.EmployeeID
+;
+
+
+
+
+
+
+#Query 8->14 results
+select patient.Name from patient, vaccination, vaccines
+where patient.SSN=vaccination.patient_SSN 
+	and vaccination.vaccines_vax_name=vaccines.vax_name 
+	and vaccines.num_of_doses<>(
+		select Count(*) from vaccination
+        where patient.SSN=vaccination.patient_SSN
+	)
+;
+
+
+
+
+
+
+#Query 9-> results
+
+
+
+
+
+
+#Query 10->9 results
+select physician.Name, Count(*) from physician, treatment, trained_in
+where trained_in.Physician=EmployeeID and treatment.Code=trained_in.Speciality
+group by physician.EmployeeID
+having Count(*)=(select Count(*) from treatment where treatment.Name='RADIATION ONCOLOGY')
+;
